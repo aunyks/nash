@@ -1,5 +1,6 @@
 use std::io::{self, Write};
 use std::env;
+use std::process::Command;
 
 fn main() {
     // Init shell prompt.
@@ -43,4 +44,11 @@ fn main() {
             },
         }
     }
+}
+
+fn execute_cmd(cmd_str: String) -> i32 {
+    let cmd = Command::new(cmd_str);
+    /*
+    https://doc.rust-lang.org/std/process/struct.Command.html
+    */
 }
