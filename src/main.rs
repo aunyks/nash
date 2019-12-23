@@ -32,10 +32,14 @@ fn main() {
             Ok(_) => {
                 // NOTE: Should builtins just be separate
                 //       branches like this?
-                if input == "exit\n" {
+                let trimmed_input = String::from(input.trim_end().trim_start());
+                if trimmed_input == "exit" {
                     std::process::exit(0);
                 } else {
-                    execute_cmd(input);
+                    let exit_code = execute_cmd(trimmed_input);
+                    if exit_code != 0 {
+                        println!("Error: {}", exit_code);
+                    }
                 }
             }
             Err(e) => {
@@ -46,14 +50,13 @@ fn main() {
     }
 }
 
-// Return exit code, -7 if an error occurs or a process signaled to stop
-// If full_cmd_str is "ls -l dir\n"
+// Return exit code, -8 if an error occurs
+// or -7 if process signaled to stop
+// If full_cmd_str is "ls -l dir"
 fn execute_cmd(full_cmd_str: String) -> i32 {
-    // trimmed_cmd_str = ls -l dir
-    let trimmed_cmd_str = full_cmd_str.trim_end();
-    //println!("Full CMD: {}", trimmed_cmd_str);
+    //println!("Full CMD: {}", full_cmd_str);
     // arg_arr = [ls, -l, dir]
-    let arg_arr: Vec<&str> = trimmed_cmd_str.splitn(2, ' ').collect();
+    let arg_arr: Vec<&str> = full_cmd_str.splitn(2, ' ').collect();
     //println!("Argument Array: {:?}", arg_arr);
     // cmd_str = ls
     let cmd_str: String = if arg_arr.len() > 0 {
@@ -81,13 +84,14 @@ fn execute_cmd(full_cmd_str: String) -> i32 {
     // Execute command and get exit status
     let cmd_status = cmd_w_env.status();
     // Return its error code, -7 if 
-    // we're not sure or something else goes wrong
+    // stopped using signal, -8 if an
+    // unknown error occurred
     if !cmd_status.is_err() {
         match cmd_status.unwrap().code() {
             Some(code) => code,
             None => -7,
         }
     } else {
-        -7
+        -8
     }
 }
